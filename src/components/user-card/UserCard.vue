@@ -15,7 +15,7 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { User } from '../models';
+import { User } from '../../domain/user';
 
 defineProps<User>();
 </script>

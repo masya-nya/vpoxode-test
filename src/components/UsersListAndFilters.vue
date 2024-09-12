@@ -27,9 +27,9 @@
     <div class="t-flex t-justify-between t-items-center t-mt-6">
       <div>
         <q-btn
-          v-show="hasMore"
+          v-show="usersStore.hasMore"
           @click="loadMoreUsers"
-          :label="`Показать ещё ${moreLoadCount > 0 ? moreLoadCount : ''}`"
+          :label="`Показать ещё ${usersStore.moreLoadCount > 0 ? usersStore.moreLoadCount : ''}`"
         />
       </div>
       <q-pagination
@@ -42,13 +42,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UsersList from './users-list/UsersList.vue';
 import { useUsersStore } from 'src/stores/usersListPageStore';
 import { debounce } from 'quasar';
-import { UserQueryKeys } from './consts';
-import { Filters } from './models';
+import { UserFilters } from '../domain/user';
 
 const router = useRouter();
 const route = useRoute();
@@ -59,20 +58,9 @@ const perPageOptions = [2, 5, 10, 20];
 const perPageDefault = perPageOptions[1];
 const pageDefault = 1;
 const perPage = ref<number>(perPageDefault);
-const filters = ref<Filters>({
-  [UserQueryKeys.name]: '',
-  [UserQueryKeys.email]: '',
-});
-
-const hasMore = computed<boolean>(() => {
-  return usersStore.usersData.total_pages > usersStore.usersData.page;
-});
-
-const moreLoadCount = computed<number>(() => {
-  const remainingUsers =
-    usersStore.usersData.total -
-    usersStore.usersData.page * usersStore.usersData.per_page;
-  return remainingUsers > perPage.value ? perPage.value : remainingUsers;
+const filters = ref<UserFilters>({
+  name: '',
+  email: '',
 });
 
 async function loadPageUsers(page: number = pageDefault) {
@@ -88,7 +76,7 @@ async function loadPageUsers(page: number = pageDefault) {
 const debounceLoadPageUsers = debounce(loadPageUsers, 500);
 
 async function loadMoreUsers() {
-  if (hasMore.value) {
+  if (usersStore.hasMore) {
     await fetchMoreUsers({
       page: usersStore.usersData.page + 1,
       per_page: perPage.value,
@@ -101,26 +89,23 @@ async function loadMoreUsers() {
 
 function updateQueryParams() {
   const queryParams = {
-    [UserQueryKeys.page]:
+    page:
       usersStore.usersData.page !== pageDefault
         ? usersStore.usersData.page
         : undefined,
-    [UserQueryKeys.perPage]:
-      perPage.value !== perPageDefault ? perPage.value : undefined,
-    [UserQueryKeys.name]:
-      filters.value.name !== '' ? filters.value.name : undefined,
-    [UserQueryKeys.email]:
-      filters.value.email !== '' ? filters.value.email : undefined,
+    per_page: perPage.value !== perPageDefault ? perPage.value : undefined,
+    name: filters.value.name !== '' ? filters.value.name : undefined,
+    email: filters.value.email !== '' ? filters.value.email : undefined,
   };
   router.replace({ query: queryParams });
 }
 
 onMounted(() => {
   const query = route.query;
-  if (query[UserQueryKeys.page]) usersStore.usersData.page = Number(query.page);
-  if (query[UserQueryKeys.perPage]) perPage.value = Number(query.per_page);
-  if (query[UserQueryKeys.name]) filters.value.name = query.name as string;
-  if (query[UserQueryKeys.email]) filters.value.email = query.email as string;
+  if (query.page) usersStore.usersData.page = Number(query.page);
+  if (query.per_page) perPage.value = Number(query.per_page);
+  if (query.name) filters.value.name = query.name as string;
+  if (query.email) filters.value.email = query.email as string;
   loadPageUsers(usersStore.usersData.page);
 });
 </script>

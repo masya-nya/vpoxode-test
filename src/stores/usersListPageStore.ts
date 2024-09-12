@@ -1,21 +1,24 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import type { FetchDataDTO, User, UserData } from 'components/models';
+import { computed, ref } from 'vue';
+import type {
+  UserTableRequestParams,
+  User,
+  TablePagination,
+} from 'src/domain/user';
 import { UsersApi } from 'src/api/usersApi';
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<User[]>([]);
-  const usersData = ref<UserData>({
+  const usersData = ref<TablePagination>({
     page: 1,
     per_page: 0,
     total: 0,
     total_pages: 0,
   });
 
-  // ? Хоть фильтрация через API и не работает (по причине неработающего API), все равно считаю эту реализацию
+  // ? Хоть фильтрация через API и не работает (по причине неработающего API), я все равно считаю эту реализацию
   // ? верной так как локальная фильтрация данных одной страницы является плохим UX кейсом
-
-  async function fetchUsers(params: FetchDataDTO): Promise<void> {
+  async function fetchUsers(params: UserTableRequestParams): Promise<void> {
     try {
       const data = await UsersApi.fetchUsers(params);
       const { data: fetchUsers, ...fetchUsersData } = data;
@@ -26,7 +29,7 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  async function fetchMoreUsers(params: FetchDataDTO): Promise<void> {
+  async function fetchMoreUsers(params: UserTableRequestParams): Promise<void> {
     try {
       const data = await UsersApi.fetchUsers(params);
       const { data: fetchUsers, ...fetchUsersData } = data;
@@ -37,10 +40,24 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  const hasMore = computed<boolean>(() => {
+    return usersData.value.total_pages > usersData.value.page;
+  });
+
+  const moreLoadCount = computed<number>(() => {
+    const remainingUsers =
+      usersData.value.total - usersData.value.page * usersData.value.per_page;
+    return remainingUsers > usersData.value.per_page
+      ? usersData.value.per_page
+      : remainingUsers;
+  });
+
   return {
     users,
     usersData,
     fetchUsers,
     fetchMoreUsers,
+    moreLoadCount,
+    hasMore,
   };
 });

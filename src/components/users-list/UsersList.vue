@@ -9,7 +9,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { User } from '../models';
+import { User } from '../../domain/user';
 import UserCard from '../user-card/UserCard.vue';
 
 defineProps<{
