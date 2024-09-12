@@ -25,3 +25,8 @@ export interface FetchDataDTO {
   [UserQueryKeys.name]: string;
   [UserQueryKeys.email]: string;
 }
+
+export interface Filters {
+  [UserQueryKeys.name]: string;
+  [UserQueryKeys.email]: string;
+}

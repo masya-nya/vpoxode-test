@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
 import { ref } from 'vue';
-
-import type { FetchDataDTO, PageData, User, UserData } from 'components/models';
+import type { FetchDataDTO, User, UserData } from 'components/models';
+import { UsersApi } from 'src/api/usersApi';
 
 export const useUsersStore = defineStore('users', () => {
   const users = ref<User[]>([]);
@@ -15,12 +14,7 @@ export const useUsersStore = defineStore('users', () => {
 
   async function fetchUsers(params: FetchDataDTO): Promise<void> {
     try {
-      const { data } = await axios.get<PageData>(
-        'https://reqres.in/api/users',
-        {
-          params,
-        },
-      );
+      const data = await UsersApi.fetchUsers(params);
       const { data: fetchUsers, ...fetchUsersData } = data;
       users.value = fetchUsers;
       usersData.value = fetchUsersData;
@@ -31,12 +25,7 @@ export const useUsersStore = defineStore('users', () => {
 
   async function fetchMoreUsers(params: FetchDataDTO): Promise<void> {
     try {
-      const { data } = await axios.get<PageData>(
-        'https://reqres.in/api/users',
-        {
-          params,
-        },
-      );
+      const data = await UsersApi.fetchUsers(params);
       const { data: fetchUsers, ...fetchUsersData } = data;
       users.value = [...users.value, ...fetchUsers];
       usersData.value = fetchUsersData;
