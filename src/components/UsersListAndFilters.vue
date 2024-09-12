@@ -42,72 +42,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import UsersList from './users-list/UsersList.vue';
-import { useUsersStore } from 'src/stores/usersListPageStore';
 import { debounce } from 'quasar';
-import { UserFilters } from '../domain/user';
+import { useUsers } from 'src/hooks/useUsers';
+import { useUsersStore } from 'src/stores/usersListPageStore';
+import UsersList from './users-list/UsersList.vue';
 
-const router = useRouter();
-const route = useRoute();
 const usersStore = useUsersStore();
-const { fetchMoreUsers, fetchUsers } = usersStore;
-
-const perPageOptions = [2, 5, 10, 20];
-const perPageDefault = perPageOptions[1];
-const pageDefault = 1;
-const perPage = ref<number>(perPageDefault);
-const filters = ref<UserFilters>({
-  name: '',
-  email: '',
-});
-
-async function loadPageUsers(page: number = pageDefault) {
-  await fetchUsers({
-    page: page,
-    per_page: perPage.value,
-    name: filters.value.name,
-    email: filters.value.email,
-  });
-  updateQueryParams();
-}
+const { filters, perPage, perPageOptions, loadMoreUsers, loadPageUsers } =
+  useUsers();
 
 const debounceLoadPageUsers = debounce(loadPageUsers, 500);
-
-async function loadMoreUsers() {
-  if (usersStore.hasMore) {
-    await fetchMoreUsers({
-      page: usersStore.usersData.page + 1,
-      per_page: perPage.value,
-      name: filters.value.name,
-      email: filters.value.email,
-    });
-    updateQueryParams();
-  }
-}
-
-function updateQueryParams() {
-  const queryParams = {
-    page:
-      usersStore.usersData.page !== pageDefault
-        ? usersStore.usersData.page
-        : undefined,
-    per_page: perPage.value !== perPageDefault ? perPage.value : undefined,
-    name: filters.value.name !== '' ? filters.value.name : undefined,
-    email: filters.value.email !== '' ? filters.value.email : undefined,
-  };
-  router.replace({ query: queryParams });
-}
-
-onMounted(() => {
-  const query = route.query;
-  if (query.page) usersStore.usersData.page = Number(query.page);
-  if (query.per_page) perPage.value = Number(query.per_page);
-  if (query.name) filters.value.name = query.name as string;
-  if (query.email) filters.value.email = query.email as string;
-  loadPageUsers(usersStore.usersData.page);
-});
 </script>
 
 <style scoped></style>
