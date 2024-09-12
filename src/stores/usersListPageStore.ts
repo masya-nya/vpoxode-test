@@ -12,6 +12,9 @@ export const useUsersStore = defineStore('users', () => {
     total_pages: 0,
   });
 
+  // ? Хоть фильтрация через API и не работает (по причине неработающего API), все равно считаю эту реализацию
+  // ? верной так как локальная фильтрация данных одной страницы является плохим UX кейсом
+
   async function fetchUsers(params: FetchDataDTO): Promise<void> {
     try {
       const data = await UsersApi.fetchUsers(params);
