@@ -1,3 +1,5 @@
+import { UserQueryKeys } from './consts';
+
 export interface User {
   id: number;
   email: string;
@@ -18,8 +20,8 @@ export interface PageData extends UserData {
 }
 
 export interface FetchDataDTO {
-  page: number;
-  per_page: number;
-  name: string;
-  email: string;
+  [UserQueryKeys.page]: number;
+  [UserQueryKeys.perPage]: number;
+  [UserQueryKeys.name]: string;
+  [UserQueryKeys.email]: string;
 }

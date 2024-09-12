@@ -45,6 +45,7 @@ import { useRoute, useRouter } from 'vue-router';
 import UserList from './user-list/UserList.vue';
 import { useUsersStore } from 'src/stores/users';
 import { debounce } from 'quasar';
+import { UserQueryKeys } from './consts';
 
 const usersStore = useUsersStore();
 
@@ -97,21 +98,27 @@ async function loadMoreData() {
 function updateQueryParams() {
   const queryParams: Record<string, string | number> = {
     ...(usersStore.usersData.page !== pageDefault
-      ? { page: usersStore.usersData.page }
+      ? { [UserQueryKeys.page]: usersStore.usersData.page }
       : {}),
-    ...(perPage.value !== perPageDefault ? { per_page: perPage.value } : {}),
-    ...(filters.value.email !== '' ? { email: filters.value.email } : {}),
-    ...(filters.value.name !== '' ? { name: filters.value.name } : {}),
+    ...(perPage.value !== perPageDefault
+      ? { [UserQueryKeys.perPage]: perPage.value }
+      : {}),
+    ...(filters.value.email !== ''
+      ? { [UserQueryKeys.email]: filters.value.email }
+      : {}),
+    ...(filters.value.name !== ''
+      ? { [UserQueryKeys.name]: filters.value.name }
+      : {}),
   };
   router.replace({ query: queryParams });
 }
 
 onMounted(() => {
   const query = route.query;
-  if (query.page) usersStore.usersData.page = Number(query.page);
-  if (query.per_page) perPage.value = Number(query.per_page);
-  if (query.name) filters.value.name = query.name as string;
-  if (query.email) filters.value.email = query.email as string;
+  if (query[UserQueryKeys.page]) usersStore.usersData.page = Number(query.page);
+  if (query[UserQueryKeys.perPage]) perPage.value = Number(query.per_page);
+  if (query[UserQueryKeys.name]) filters.value.name = query.name as string;
+  if (query[UserQueryKeys.email]) filters.value.email = query.email as string;
   loadPageData(usersStore.usersData.page);
 });
 </script>
